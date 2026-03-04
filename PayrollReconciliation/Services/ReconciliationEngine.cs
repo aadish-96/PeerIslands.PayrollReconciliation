@@ -9,8 +9,8 @@ public class ReconciliationEngine(Logger logger)
     public List<ReconciliationResult> Reconcile(List<HRRecord> hrRecords, List<FinanceRecord> financeRecords)
     {
         var results = new List<ReconciliationResult>();
-        var finDict = financeRecords.ToDictionary(f => f.EmployeeId, StringComparer.OrdinalIgnoreCase);
-        var hrIds = new HashSet<string>(hrRecords.Select(h => h.EmployeeId), StringComparer.OrdinalIgnoreCase);
+        var finDict = financeRecords.ToDictionary(f => f.EmployeeId, StringComparer.InvariantCultureIgnoreCase);
+        var hrIds = new HashSet<string>(hrRecords.Select(h => h.EmployeeId), StringComparer.InvariantCultureIgnoreCase);
 
         logger.Info($"Matching {hrRecords.Count} HR records against {financeRecords.Count} Finance records...");
 

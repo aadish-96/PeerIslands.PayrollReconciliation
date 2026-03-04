@@ -1,6 +1,5 @@
 using ClosedXML.Excel;
 using PayrollReconciliation.Models;
-using System.Text;
 
 namespace PayrollReconciliation.Services;
 
@@ -8,7 +7,7 @@ public class ReportWriter(Logger logger)
 {
     public void WriteReport(List<ReconciliationResult> results, string outputPath)
     {
-        if (outputPath.EndsWith(".csv", StringComparison.OrdinalIgnoreCase))
+        if (outputPath.EndsWith(".csv", StringComparison.InvariantCultureIgnoreCase))
             WriteCsv(results, outputPath);
         else
             WriteExcel(results, outputPath);
@@ -95,7 +94,6 @@ public class ReportWriter(Logger logger)
 
         foreach (var r in results)
         {
-            var rowRange = ws.Row(row);
             ws.Cell(row, 1).Value = r.EmployeeId;
             ws.Cell(row, 2).Value = r.EmployeeName;
             ws.Cell(row, 3).Value = r.Department;
@@ -283,8 +281,9 @@ public class ReportWriter(Logger logger)
     {
         logger.Info($"Writing CSV report to {outputPath}...");
 
-        StringBuilder hdr = new();
-        hdr.AppendJoin<string>(',', [
+        var lines = new List<string>()
+        {
+            string.Join(',', [
             ColumnNames.EMPLOYEE_ID,
             ColumnNames.EMPLOYEE_NAME,
             ColumnNames.DEPARTMENT,
@@ -306,15 +305,14 @@ public class ReportWriter(Logger logger)
             ColumnNames.STATUS,
             ColumnNames.MISMATCH_REMARKS,
             ColumnNames.HR_NOTES
-            ]);
-
-        var lines = new List<string>() { hdr.ToString() };
+            ])
+        };
 
         foreach (var r in results)
         {
             decimal diff = (r.Fin_NetPay ?? 0) - (r.HR_NetPay ?? 0);
 
-            lines.Add(string.Join(",", Q(r.EmployeeId), Q(r.EmployeeName), Q(r.Department), Q(r.Designation), Q(r.PayMonth), r.HR_GrossSalary, r.Fin_GrossSalary, r.HR_PFDeduction, r.Fin_PFDeduction, r.HR_ProfTax, r.Fin_ProfTax, r.HR_OtherDeductions, r.Fin_OtherDeductions, r.HR_NetPay, r.Fin_NetPay, diff != 0 ? diff.ToString() : "", Q(r.DisbursementDate), Q(r.BankRefNo), r.Status, Q(r.MismatchRemarks), Q(r.HRRemarks)));
+            lines.Add(string.Join(',', Q(r.EmployeeId), Q(r.EmployeeName), Q(r.Department), Q(r.Designation), Q(r.PayMonth), r.HR_GrossSalary, r.Fin_GrossSalary, r.HR_PFDeduction, r.Fin_PFDeduction, r.HR_ProfTax, r.Fin_ProfTax, r.HR_OtherDeductions, r.Fin_OtherDeductions, r.HR_NetPay, r.Fin_NetPay, diff != 0 ? diff.ToString() : "", Q(r.DisbursementDate), Q(r.BankRefNo), r.Status, Q(r.MismatchRemarks), Q(r.HRRemarks)));
         }
 
         var dir = Path.GetDirectoryName(outputPath);

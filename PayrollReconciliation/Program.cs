@@ -59,12 +59,40 @@ class Program
             var engine = new ReconciliationEngine(logger);
             var results = engine.Reconcile(hrRecords, financeRecords);
 
-            int matched = results.Count(r => r.Status == ReconciliationStatus.Matched);
-            int mismatched = results.Count(r => r.Status == ReconciliationStatus.Mismatched);
-            int hrOnly = results.Count(r => r.Status == ReconciliationStatus.HROnly);
-            int finOnly = results.Count(r => r.Status == ReconciliationStatus.FinanceOnly);
+            int matched = 0;
+            int mismatched = 0;
+            int hrOnly = 0;
+            int finOnly = 0;
+            int unknown = 0;
 
-            logger.Info($"Reconciliation complete — Total: {results.Count} | Matched: {matched} | Mismatched: {mismatched} | HR-Only: {hrOnly} | Finance-Only: {finOnly}");
+            foreach (var result in results)
+            {
+                switch (result.Status)
+                {
+                    case ReconciliationStatus.Matched:
+                        matched++;
+                        break;
+                    case ReconciliationStatus.Mismatched:
+                        mismatched++;
+                        break;
+                    case ReconciliationStatus.HROnly:
+                        hrOnly++;
+                        break;
+                    case ReconciliationStatus.FinanceOnly:
+                        finOnly++;
+                        break;
+                    default:
+                        unknown++;
+                        break;
+                }
+            }
+
+            System.Text.StringBuilder sb = new($"Reconciliation complete — Total: {results.Count} | Matched: {matched} | Mismatched: {mismatched} | HR-Only: {hrOnly} | Finance-Only: {finOnly}");
+
+            if (unknown > 0)
+                sb.Append($" | Unknown: {unknown}");
+
+            logger.Info(sb.ToString());
 
             logger.Info("Writing output report...");
             var reporter = new ReportWriter(logger);
