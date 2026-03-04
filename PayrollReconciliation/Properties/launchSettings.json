@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "PayrollReconciliation": {
+      "commandName": "Project",
+      "commandLineArgs": "\"D:\\Interview Assignments\\PeerIslands\\payroll_hr_data.xlsx\" \"D:\\Interview Assignments\\PeerIslands\\payroll_fin_data.xlsx\" \"D:\\Interview Assignments\\PeerIslands\\Trials\\recon_output.xlsx\" \"D:\\Interview Assignments\\PeerIslands\\Trials\\recon_logs.log\""
+    }
+  }
+}
