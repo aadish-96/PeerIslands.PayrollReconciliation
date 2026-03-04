@@ -37,7 +37,7 @@
         public const string HEADER = "1F497D";
         public const string MATCHED = "C6EFCE";
         public const string MISMATCH = "FFC7CE";
-        public const string HR_ONLY = "F9C434";
+        public const string HR_ONLY = "FFFF00";
         public const string FIN_ONLY = "FA9D05";
         public const string WHITE = "FFFFFF";
     }
