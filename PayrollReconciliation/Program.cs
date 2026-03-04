@@ -99,7 +99,26 @@ class Program
             reporter.WriteReport(results, outputPath);
             logger.Info($"Report written to: {outputPath}");
 
-            PrintSummary(results, outputPath, logPath);
+            Console.WriteLine("╔══════════════════════════════════════════════╗");
+            Console.WriteLine("║         RECONCILIATION SUMMARY               ║");
+            Console.WriteLine("╠══════════════════════════════════════════════╣");
+            Console.WriteLine($"║  Total Records Processed : {results.Count,-17} ║");
+            Console.WriteLine($"║  Matched                 : {matched,-17} ║");
+            Console.WriteLine($"║  Mismatched              : {mismatched,-17} ║");
+            Console.WriteLine($"║  HR Only (missing in Fin): {hrOnly,-17} ║");
+            Console.WriteLine($"║  Finance Only            : {finOnly,-17} ║");
+            Console.WriteLine("╚══════════════════════════════════════════════╝");
+            Console.WriteLine($"Output: {outputPath,-36}");
+            Console.WriteLine($"Log   : {logPath,-36}");
+
+            if (mismatched > 0)
+            {
+                Console.WriteLine();
+                Console.WriteLine("MISMATCH DETAILS:");
+
+                foreach (var r in results.Where(x => x.Status == ReconciliationStatus.Mismatched))
+                    Console.WriteLine($"  [{r.EmployeeId}] {r.EmployeeName}: {r.MismatchRemarks}");
+            }
 
             logger.Info("Payroll Reconciliation Tool completed successfully");
             return 0;
@@ -134,34 +153,4 @@ class Program
     static string GenerateOutputPath() => $"output/reconciliation_output_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
 
     static string GenerateLogPath() => $"logs/reconciliation_{DateTime.Now:yyyyMMdd_HHmmss}.log";
-
-    static void PrintSummary(List<ReconciliationResult> results, string outputPath, string logPath)
-    {
-        int total = results.Count;
-        int matched = results.Count(r => r.Status == ReconciliationStatus.Matched);
-        int mismatched = results.Count(r => r.Status == ReconciliationStatus.Mismatched);
-        int hrOnly = results.Count(r => r.Status == ReconciliationStatus.HROnly);
-        int finOnly = results.Count(r => r.Status == ReconciliationStatus.FinanceOnly);
-
-        Console.WriteLine("╔══════════════════════════════════════════════╗");
-        Console.WriteLine("║         RECONCILIATION SUMMARY               ║");
-        Console.WriteLine("╠══════════════════════════════════════════════╣");
-        Console.WriteLine($"║  Total Records Processed : {total,-17} ║");
-        Console.WriteLine($"║  Matched                 : {matched,-17} ║");
-        Console.WriteLine($"║  Mismatched              : {mismatched,-17} ║");
-        Console.WriteLine($"║  HR Only (missing in Fin): {hrOnly,-17} ║");
-        Console.WriteLine($"║  Finance Only            : {finOnly,-17} ║");
-        Console.WriteLine("╚══════════════════════════════════════════════╝");
-        Console.WriteLine($"Output: {outputPath,-36}");
-        Console.WriteLine($"Log   : {logPath,-36}");
-
-        if (mismatched > 0)
-        {
-            Console.WriteLine();
-            Console.WriteLine("MISMATCH DETAILS:");
-
-            foreach (var r in results.Where(x => x.Status == ReconciliationStatus.Mismatched))
-                Console.WriteLine($"  [{r.EmployeeId}] {r.EmployeeName}: {r.MismatchRemarks}");
-        }
-    }
 }
