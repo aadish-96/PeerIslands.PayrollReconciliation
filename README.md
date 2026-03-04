@@ -10,7 +10,7 @@ PayrollReconciliation/
 ├── PayrollReconciliation.csproj
 ├── Program.cs                        ← Entry point & CLI
 ├── Models/
-│   ├── Constants.cs                  ← Constants like Column Names, Color Hex Codes, etc.
+│   ├── Constants.cs                  ← Constants such as Column Names, Color Hex Codes, etc.
 │   ├── HRRecord.cs                   ← HR data model
 │   ├── FinanceRecord.cs              ← Finance data model
 │   └── ReconciliationResult.cs       ← Result + status enum

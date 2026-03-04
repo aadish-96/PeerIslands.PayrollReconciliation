@@ -114,7 +114,8 @@ public class ReportWriter(Logger logger)
             var diff = (r.Fin_NetPay ?? 0) - (r.HR_NetPay ?? 0);
 
             if (diff != 0)
-                SetNum(ws, row, 16, diff); else ws.Cell(row, 16).Value = "";
+                SetNum(ws, row, 16, diff);
+            else ws.Cell(row, 16).Value = "";
 
             ws.Cell(row, 17).Value = r.DisbursementDate;
             ws.Cell(row, 18).Value = r.BankRefNo;
@@ -135,12 +136,6 @@ public class ReportWriter(Logger logger)
 
             row++;
         }
-
-        //// Column widths
-        //int[] widths = [12, 22, 16, 22, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 16, 18, 26, 60, 35];
-
-        //for (int i = 0; i < widths.Length; i++)
-        //    ws.Column(i + 1).Width = widths[i];
 
         ws.SheetView.FreezeRows(4);
 
@@ -176,67 +171,68 @@ public class ReportWriter(Logger logger)
     }
 
     // ── Issues-Only Sheet ─────────────────────────────────────────────────────
-    private static void WriteIssuesSheet(XLWorkbook wb, List<ReconciliationResult> results)
+    private void WriteIssuesSheet(XLWorkbook wb, List<ReconciliationResult> results)
     {
         var issues = results.Where(r => r.Status != ReconciliationStatus.Matched).ToList();
-        var ws = wb.Worksheets.Add("Issues Only");
 
-        ws.Cell("A1").Value = $"ISSUES REQUIRING ATTENTION — {issues.Count} records";
-        ws.Cell("A1").Style.Font.Bold = true;
-        ws.Cell("A1").Style.Font.FontSize = 13;
-        ws.Cell("A1").Style.Font.FontColor = XLColor.FromHtml("#C00000");
-
-        var hdrs = new[] { ColumnNames.EMPLOYEE_ID, ColumnNames.EMPLOYEE_NAME, ColumnNames.DEPARTMENT, ColumnNames.STATUS, ColumnNames.HR_NET_PAY, ColumnNames.FIN_NET_PAY, ColumnNames.DIFFERENCE, ColumnNames.MISMATCH_REMARKS, ColumnNames.HR_NOTES };
-
-        for (int i = 0; i < hdrs.Length; i++)
+        if (issues.Count > 0)
         {
-            var c = ws.Cell(3, i + 1);
-            c.Value = hdrs[i];
-            c.Style.Font.Bold = true;
-            c.Style.Font.FontColor = XLColor.White;
-            c.Style.Fill.BackgroundColor = XLColor.FromHtml("#C00000");
-            c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-        }
+            var ws = wb.Worksheets.Add("Issues Only");
 
-        int row = 4;
+            ws.Cell("A1").Value = $"ISSUES REQUIRING ATTENTION — {issues.Count} records";
+            ws.Cell("A1").Style.Font.Bold = true;
+            ws.Cell("A1").Style.Font.FontSize = 13;
+            ws.Cell("A1").Style.Font.FontColor = XLColor.FromHtml("#C00000");
 
-        foreach (var r in issues)
-        {
-            XLColor bg = r.Status switch
+            var hdrs = new[] { ColumnNames.EMPLOYEE_ID, ColumnNames.EMPLOYEE_NAME, ColumnNames.DEPARTMENT, ColumnNames.STATUS, ColumnNames.HR_NET_PAY, ColumnNames.FIN_NET_PAY, ColumnNames.DIFFERENCE, ColumnNames.MISMATCH_REMARKS, ColumnNames.HR_NOTES };
+
+            for (int i = 0; i < hdrs.Length; i++)
             {
-                ReconciliationStatus.Mismatched => XLColor.FromHtml($"#{HexColorCodes.MISMATCH}"),
-                ReconciliationStatus.HROnly => XLColor.FromHtml($"#{HexColorCodes.HR_ONLY}"),
-                ReconciliationStatus.FinanceOnly => XLColor.FromHtml($"#{HexColorCodes.FIN_ONLY}"),
-                _ => XLColor.White
-            };
+                var c = ws.Cell(3, i + 1);
+                c.Value = hdrs[i];
+                c.Style.Font.Bold = true;
+                c.Style.Font.FontColor = XLColor.White;
+                c.Style.Fill.BackgroundColor = XLColor.FromHtml("#C00000");
+                c.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            }
 
-            decimal diff = (r.Fin_NetPay ?? 0) - (r.HR_NetPay ?? 0);
-            ws.Cell(row, 1).Value = r.EmployeeId;
-            ws.Cell(row, 2).Value = r.EmployeeName;
-            ws.Cell(row, 3).Value = r.Department;
-            ws.Cell(row, 4).Value = r.Status.ToString();
-            ws.Cell(row, 4).Style.Font.Bold = true;
-            SetNum(ws, row, 5, r.HR_NetPay);
-            SetNum(ws, row, 6, r.Fin_NetPay);
-            if (diff != 0) SetNum(ws, row, 7, diff);
-            ws.Cell(row, 8).Value = r.MismatchRemarks;
-            ws.Cell(row, 8).Style.Alignment.WrapText = true;
-            ws.Cell(row, 9).Value = r.HRRemarks;
-            ws.Range(row, 1, row, 9).Style.Fill.BackgroundColor = bg;
-            ws.Range(row, 1, row, 9).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
-            ws.Range(row, 1, row, 9).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
-            row++;
+            int row = 4;
+
+            foreach (var r in issues)
+            {
+                XLColor bg = r.Status switch
+                {
+                    ReconciliationStatus.Mismatched => XLColor.FromHtml($"#{HexColorCodes.MISMATCH}"),
+                    ReconciliationStatus.HROnly => XLColor.FromHtml($"#{HexColorCodes.HR_ONLY}"),
+                    ReconciliationStatus.FinanceOnly => XLColor.FromHtml($"#{HexColorCodes.FIN_ONLY}"),
+                    _ => XLColor.White
+                };
+
+                decimal diff = (r.Fin_NetPay ?? 0) - (r.HR_NetPay ?? 0);
+                ws.Cell(row, 1).Value = r.EmployeeId;
+                ws.Cell(row, 2).Value = r.EmployeeName;
+                ws.Cell(row, 3).Value = r.Department;
+                ws.Cell(row, 4).Value = r.Status.ToString();
+                ws.Cell(row, 4).Style.Font.Bold = true;
+                SetNum(ws, row, 5, r.HR_NetPay);
+                SetNum(ws, row, 6, r.Fin_NetPay);
+                if (diff != 0) SetNum(ws, row, 7, diff);
+                ws.Cell(row, 8).Value = r.MismatchRemarks;
+                ws.Cell(row, 8).Style.Alignment.WrapText = true;
+                ws.Cell(row, 9).Value = r.HRRemarks;
+                ws.Range(row, 1, row, 9).Style.Fill.BackgroundColor = bg;
+                ws.Range(row, 1, row, 9).Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+                ws.Range(row, 1, row, 9).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+                row++;
+            }
+
+            ws.SheetView.FreezeRows(3);
+
+            ws.Rows().AdjustToContents();
+            ws.Columns().AdjustToContents();
         }
-
-        //int[] w = [12, 22, 16, 26, 16, 16, 16, 65, 35];
-
-        //for (int i = 0; i < w.Length; i++)
-        //    ws.Column(i + 1).Width = w[i];
-
-        ws.SheetView.FreezeRows(3);
-
-        ws.Rows().AdjustToContents();
-        ws.Columns().AdjustToContents();
+        else
+            logger.Info("No issues were found post reconciliation.");
     }
 
     // ── Summary Sheet ─────────────────────────────────────────────────────────
@@ -278,9 +274,6 @@ public class ReportWriter(Logger logger)
             ws.Range(rowNum, 1, rowNum, 3).Style.Border.InsideBorder = XLBorderStyleValues.Thin;
         }
 
-        //ws.Column(1).Width = 36;
-        //ws.Column(2).Width = 12;
-        //ws.Column(3).Width = 14;
         ws.Rows().AdjustToContents();
         ws.Columns().AdjustToContents();
     }
@@ -289,7 +282,7 @@ public class ReportWriter(Logger logger)
     private void WriteCsv(List<ReconciliationResult> results, string outputPath)
     {
         logger.Info($"Writing CSV report to {outputPath}...");
-        
+
         StringBuilder hdr = new();
         hdr.AppendJoin<string>(',', [
             ColumnNames.EMPLOYEE_ID,
@@ -315,10 +308,7 @@ public class ReportWriter(Logger logger)
             ColumnNames.HR_NOTES
             ]);
 
-        var lines = new List<string>
-        {
-            hdr.ToString()
-        };
+        var lines = new List<string>() { hdr.ToString() };
 
         foreach (var r in results)
         {
@@ -331,7 +321,7 @@ public class ReportWriter(Logger logger)
 
         if (!string.IsNullOrEmpty(dir))
             Directory.CreateDirectory(dir);
-        
+
         File.WriteAllLines(outputPath, lines);
         logger.Info("CSV report saved.");
     }
